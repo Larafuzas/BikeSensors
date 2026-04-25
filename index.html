@@ -617,60 +617,50 @@
 
   <button class="add-btn" id="addBtn" onclick="addSensor()">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Buscar sensores y luces
+    Buscar dispositivos
   </button>
-  <p class="add-hint">Solo se mostrarán dispositivos compatibles</p>
+  <p class="add-hint">Selecciona tu dispositivo de la lista desplegable</p>
 
-  <footer>BikeSensors v1.3 · Web Bluetooth API</footer>
+  <footer>BikeSensors v1.4 · Web Bluetooth API</footer>
 
 </div>
 
 <script>
 // ═══════════════════════════════════════════════
-//  CYCLING BLE SERVICE UUIDs & FILTERS
+//  CONSTANTS & MAPPINGS
 // ═══════════════════════════════════════════════
-const FILTER_SERVICES = [
-  // Servicios estándar
-  { services: [0x1816] }, // CSC
-  { services: [0x1818] }, // Power
-  { services: [0x180D] }, // HR
-  { services: [0x1814] }, // RSC
-  { services: [0x1819] }, // Nav
-  { services: [0x1826] }, // Fitness Machine
-  // UUID propietario común para radares Varia
-  { services: ['6a4e2800-667b-11e3-949a-0800200c9a66'] },
-  // Prefijos para cazar luces y radares que anuncian otros servicios
-  { namePrefix: 'Varia' },
-  { namePrefix: 'Radar' },
-  { namePrefix: 'Garmin' },
-  { namePrefix: 'Ion' },
-  { namePrefix: 'Flare' },
-  { namePrefix: 'Bontrager' },
-  { namePrefix: 'Bryton' },
-  { namePrefix: 'Magene' },
-  { namePrefix: 'Light' },
-  { namePrefix: 'Luz' }
-];
-
 const BATTERY_SERVICE  = 0x180F;
 const BATTERY_CHAR     = 0x2A19;
+
+// Todos los UUIDs a los que solicitaremos permiso tras conectar sin filtros
+const OPTIONAL_SERVICES = [
+  BATTERY_SERVICE,
+  0x180A, // Device Information
+  0x1816, // CSC
+  0x1818, // Power
+  0x180D, // HR
+  0x1814, // RSC
+  0x1819, // Nav
+  0x1826, // Fitness Machine
+  '6a4e2800-667b-11e3-949a-0800200c9a66' // Garmin Varia UUID
+];
 
 function detectTypeFromName(name) {
   const low = (name || '').toLowerCase();
   const map = [
-    [['power','potencia','stages','quarq','assioma','favero','p2m'],  { label: 'Potencia',            icon: '⚡' }],
-    [['cad','cadence','cadencia','speed','velocidad','spd','sc ','bsc'],{ label: 'Velocidad / Cadencia',icon: '↻' }],
-    [['hr','heart','pulse','polar','tickr','h10','h7','dual','rhythm'], { label: 'Frecuencia cardíaca', icon: '♥' }],
-    [['radar','varia','rtl515','rtl510','magene l508','rvr315'],        { label: 'Radar trasero',       icon: '◉' }],
-    [['light','luz','luces','lezyne','bontrager','flare','ion','ut800'],{ label: 'Luces',               icon: '☀' }],
-    [['di2','etap','eagle','shifting','derailleur'],                    { label: 'Cambio',              icon: '⚙' }],
-    [['trainer','tacx','kickr','neo ','flux','suito','hammer'],         { label: 'Rodillo / Trainer',   icon: '◈' }],
-    [['edge','elemnt','gps','hammerhead','wahoo'],                      { label: 'Ciclocomputador',     icon: '□' }],
+    [['power','potencia','stages','quarq','assioma','favero','p2m','magene p','pes p'],  { label: 'Potencia', icon: '⚡' }],
+    [['cad','cadence','cadencia','speed','velocidad','spd','sc ','bsc','cycplus c','cycplus s','coospo bk','magene s'],{ label: 'Velocidad / Cadencia', icon: '↻' }],
+    [['hr','heart','pulse','polar','tickr','h10','h7','dual','rhythm','coospo h','magene h'], { label: 'Frecuencia cardíaca', icon: '♥' }],
+    [['radar','varia','rtl515','rtl510','magene l508','l508','rvr315'], { label: 'Radar trasero', icon: '◉' }],
+    [['light','luz','luces','lezyne','bontrager','flare','ion','ut800','cycplus l'], { label: 'Luces', icon: '☀' }],
+    [['di2','etap','eagle','shifting','derailleur'], { label: 'Cambio', icon: '⚙' }],
+    [['trainer','tacx','kickr','neo ','flux','suito','hammer','t200','t300'], { label: 'Rodillo / Trainer', icon: '◈' }],
+    [['edge','elemnt','gps','hammerhead','wahoo','cycplus m','magene c','bc200','bc107'], { label: 'Ciclocomputador', icon: '□' }],
   ];
   for (const [keys, type] of map) {
     if (keys.some(k => low.includes(k))) return type;
   }
-  return { label: 'Sensor de ciclismo', icon: '◇' };
+  return { label: 'Dispositivo BLE', icon: '◇' };
 }
 
 function detectTypeFromServices(services) {
@@ -680,12 +670,12 @@ function detectTypeFromServices(services) {
     const n = parseInt(s, 16);
     return isNaN(n) ? s : n;
   });
-  if (uuids.includes(0x1818)) return { label: 'Potencia',            icon: '⚡' };
-  if (uuids.includes(0x1816)) return { label: 'Velocidad / Cadencia',icon: '↻' };
+  if (uuids.includes(0x1818)) return { label: 'Potencia', icon: '⚡' };
+  if (uuids.includes(0x1816)) return { label: 'Velocidad / Cadencia', icon: '↻' };
   if (uuids.includes(0x180D)) return { label: 'Frecuencia cardíaca', icon: '♥' };
-  if (uuids.includes(0x1826)) return { label: 'Rodillo / Trainer',   icon: '◈' };
-  if (uuids.includes(0x1814)) return { label: 'Sensor de carrera',   icon: '⚡' };
-  if (uuids.includes(0x1819)) return { label: 'GPS / Navegación',    icon: '◉' };
+  if (uuids.includes(0x1826)) return { label: 'Rodillo / Trainer', icon: '◈' };
+  if (uuids.includes(0x1814)) return { label: 'Sensor de carrera', icon: '⚡' };
+  if (uuids.includes(0x1819)) return { label: 'GPS / Navegación', icon: '◉' };
   return null;
 }
 
@@ -706,7 +696,7 @@ function detectPlatform() {
 const GUIDES = {
   'ios-bluefy': {
     cls: 'ios', label: 'iOS · Bluefy', autoOpen: false, title: '¡Listo! Estás en Bluefy',
-    steps: [['✓', 'Estás en <strong>Bluefy</strong>. No necesitas hacer nada más.'], ['1', 'Activa el <strong>Bluetooth</strong> en Ajustes.'], ['2', 'Pulsa <strong>Buscar sensores</strong>.']],
+    steps: [['✓', 'Estás en <strong>Bluefy</strong>. No necesitas hacer nada más.'], ['1', 'Activa el <strong>Bluetooth</strong> en Ajustes.'], ['2', 'Pulsa <strong>Buscar dispositivos</strong>.']],
   },
   'ios-safari': {
     cls: 'ios', label: 'iOS · Safari', autoOpen: true, title: 'Safari no soporta Bluetooth',
@@ -718,7 +708,7 @@ const GUIDES = {
   },
   'android-chrome': {
     cls: 'android', label: 'Android · Chrome', autoOpen: false, title: '¡Listo! Estás en Chrome',
-    steps: [['✓', '<strong>Chrome</strong> soporta Web Bluetooth nativamente.'], ['1', 'Activa <strong>Bluetooth</strong> y <strong>Ubicación</strong>.'], ['2', 'Pulsa <strong>Buscar sensores</strong>.']],
+    steps: [['✓', '<strong>Chrome</strong> soporta Web Bluetooth nativamente.'], ['1', 'Activa <strong>Bluetooth</strong> y <strong>Ubicación</strong>.'], ['2', 'Pulsa <strong>Buscar dispositivos</strong>.']],
   },
   'android-other': {
     cls: 'android', label: 'Android', autoOpen: true, title: 'Abre esto en Chrome',
@@ -726,7 +716,7 @@ const GUIDES = {
   },
   'desktop-ble': {
     cls: 'desktop', label: 'Escritorio', autoOpen: false, title: 'Bluetooth disponible',
-    steps: [['✓', 'Tu navegador es compatible. Pulsa <strong>Buscar sensores</strong>.']],
+    steps: [['✓', 'Tu navegador es compatible. Pulsa <strong>Buscar dispositivos</strong>.']],
   },
   'desktop-no-ble': {
     cls: 'unknown', label: 'Navegador', autoOpen: true, title: 'Navegador sin soporte BLE',
@@ -867,9 +857,10 @@ async function addSensor() {
   setStatus('Escaneando…', true);
 
   try {
+    // Solución Bluefy Error 2: Eliminamos los filtros restrictivos y aceptamos todos
     const device = await navigator.bluetooth.requestDevice({
-      filters: FILTER_SERVICES,
-      optionalServices: [BATTERY_SERVICE, 0x180A],
+      acceptAllDevices: true,
+      optionalServices: OPTIONAL_SERVICES
     });
 
     if (sensors.find(s => s.id === device.id)) {
@@ -886,7 +877,7 @@ async function addSensor() {
 
     sensors.push({
       id: device.id,
-      name: device.name || 'Sensor sin nombre',
+      name: device.name || 'Dispositivo desconocido',
       type: type.label,
       icon: type.icon,
       battery, noBattery,
@@ -896,7 +887,7 @@ async function addSensor() {
     render();
 
   } catch (err) {
-    if (err.name !== 'NotFoundError' && err.name !== 'AbortError') {
+    if (err.name !== 'NotFoundError' && err.name !== 'AbortError' && err.name !== 'SecurityError') {
       const realError = err.message || JSON.stringify(err) || String(err);
       alert('Error BLE: ' + realError);
     }
@@ -917,11 +908,11 @@ async function refreshSensor(id) {
 
   try {
     let device = activeDevices[id];
-    // Si la referencia se perdió (ej. recarga de página), requerirá emparejamiento manual
+    // Si la referencia se perdió, solicitar permisos de nuevo usando acceptAllDevices
     if (!device) {
       device = await navigator.bluetooth.requestDevice({
-        filters: FILTER_SERVICES,
-        optionalServices: [BATTERY_SERVICE, 0x180A],
+        acceptAllDevices: true,
+        optionalServices: OPTIONAL_SERVICES
       });
     }
     const { battery, noBattery } = await readBattery(device);
@@ -930,7 +921,7 @@ async function refreshSensor(id) {
     sensor.lastSeen  = new Date().toISOString();
     save();
   } catch (err) {
-    if (err.name !== 'NotFoundError' && err.name !== 'AbortError') {
+    if (err.name !== 'NotFoundError' && err.name !== 'AbortError' && err.name !== 'SecurityError') {
       const realError = err.message || JSON.stringify(err) || String(err);
       alert('Error al conectar: ' + realError);
     }
