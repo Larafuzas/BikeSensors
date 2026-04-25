@@ -7,564 +7,142 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-
     /* ── TOKENS ── */
     :root {
-      --accent:   #2563eb;
-      --accent-s: #1d4ed8;
-      --ok:       #16a34a;
-      --warn:     #d97706;
-      --danger:   #dc2626;
-      --no-bat:   #7c3aed;
-      --mono: 'DM Mono', monospace;
-      --sans: 'DM Sans', sans-serif;
-      --radius: 14px;
-      --radius-sm: 8px;
+      --accent: #2563eb; --accent-s: #1d4ed8; --ok: #16a34a; --warn: #d97706; --danger: #dc2626; --no-bat: #7c3aed;
+      --mono: 'DM Mono', monospace; --sans: 'DM Sans', sans-serif;
+      --radius: 14px; --radius-sm: 8px;
     }
-
-    /* LIGHT */
     @media (prefers-color-scheme: light) {
       :root {
-        --bg:       #f1f5f9;
-        --surface:  #ffffff;
-        --surface2: #f8fafc;
-        --border:   #e2e8f0;
-        --border2:  #cbd5e1;
-        --text:     #0f172a;
-        --text2:    #475569;
-        --text3:    #94a3b8;
-        --shadow:   0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
-        --shadow-sm:0 1px 2px rgba(0,0,0,0.06);
+        --bg: #f1f5f9; --surface: #ffffff; --surface2: #f8fafc; --border: #e2e8f0; --border2: #cbd5e1;
+        --text: #0f172a; --text2: #475569; --text3: #94a3b8;
+        --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06); --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
       }
     }
-
-    /* DARK */
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg:       #0d1117;
-        --surface:  #161b22;
-        --surface2: #1c2128;
-        --border:   #30363d;
-        --border2:  #484f58;
-        --text:     #e6edf3;
-        --text2:    #8b949e;
-        --text3:    #484f58;
-        --shadow:   0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
-        --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+        --bg: #0d1117; --surface: #161b22; --surface2: #1c2128; --border: #30363d; --border2: #484f58;
+        --text: #e6edf3; --text2: #8b949e; --text3: #484f58;
+        --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3); --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
       }
     }
 
-    /* ── RESET ── */
+    /* ── RESET & LAYOUT ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; }
-    body {
-      min-height: 100dvh;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      -webkit-font-smoothing: antialiased;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    /* ── LAYOUT ── */
-    .app {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 16px env(safe-area-inset-bottom, 16px);
-    }
+    body { min-height: 100dvh; background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; transition: background 0.3s, color 0.3s; }
+    .app { max-width: 480px; margin: 0 auto; padding: 0 16px env(safe-area-inset-bottom, 16px); }
 
     /* ── HEADER ── */
-    .header {
-      padding: 52px 0 24px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .header-eyebrow {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--accent);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .header-title {
-      font-size: 30px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1;
-      color: var(--text);
-    }
+    .header { padding: 52px 0 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .header-eyebrow { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+    .header-title { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--text); }
     .header-title span { color: var(--accent); }
-
-    .status-pill {
-      margin-top: 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px 4px 8px;
-      border-radius: 999px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text2);
-      letter-spacing: 0.04em;
-      transition: all 0.3s;
-      white-space: nowrap;
-    }
-    .status-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--text3);
-      flex-shrink: 0;
-      transition: background 0.3s;
-    }
+    .status-pill { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: 0.04em; transition: all 0.3s; white-space: nowrap; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background 0.3s; }
     .status-pill.active { color: var(--accent); border-color: var(--accent); }
-    .status-pill.active .status-dot {
-      background: var(--accent);
-      animation: pulse-dot 1.2s ease-in-out infinite;
-      box-shadow: 0 0 0 0 rgba(37,99,235,0.4);
-    }
-    @keyframes pulse-dot {
-      0%   { box-shadow: 0 0 0 0   rgba(37,99,235,0.5); }
-      70%  { box-shadow: 0 0 0 6px rgba(37,99,235,0); }
-      100% { box-shadow: 0 0 0 0   rgba(37,99,235,0); }
-    }
+    .status-pill.active .status-dot { background: var(--accent); animation: pulse-dot 1.2s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+    @keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); } 70% { box-shadow: 0 0 0 6px rgba(37,99,235,0); } 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); } }
 
     /* ── GUIDE CARD ── */
-    .guide-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .guide-toggle {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      gap: 12px;
-      text-align: left;
-    }
-    .guide-toggle-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .platform-chip {
-      flex-shrink: 0;
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 500;
-      padding: 3px 8px;
-      border-radius: 999px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .platform-chip.ios     { background: rgba(37,99,235,0.1);  color: var(--accent); }
-    .platform-chip.android { background: rgba(22,163,74,0.1);  color: var(--ok); }
-    .platform-chip.desktop { background: rgba(217,119,6,0.1);  color: var(--warn); }
+    .guide-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 12px; }
+    .guide-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: none; border: none; cursor: pointer; gap: 12px; text-align: left; }
+    .guide-toggle-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .platform-chip { flex-shrink: 0; font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .platform-chip.ios { background: rgba(37,99,235,0.1); color: var(--accent); }
+    .platform-chip.android { background: rgba(22,163,74,0.1); color: var(--ok); }
+    .platform-chip.desktop { background: rgba(217,119,6,0.1); color: var(--warn); }
     .platform-chip.unknown { background: rgba(124,58,237,0.1); color: var(--no-bat); }
-
-    .guide-toggle-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .guide-chevron {
-      flex-shrink: 0;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: var(--text2);
-      transition: transform 0.25s;
-    }
+    .guide-toggle-title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .guide-chevron { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text2); transition: transform 0.25s; }
     .guide-card.open .guide-chevron { transform: rotate(180deg); }
-    .guide-body {
-      display: none;
-      padding: 0 16px 16px;
-      border-top: 1px solid var(--border);
-    }
+    .guide-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
     .guide-card.open .guide-body { display: block; }
-    .guide-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding-top: 16px;
-    }
-    .guide-step {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .step-badge {
-      flex-shrink: 0;
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .step-body {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text2);
-      line-height: 1.55;
-      padding-top: 3px;
-    }
+    .guide-steps { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; }
+    .guide-step { display: flex; gap: 12px; align-items: flex-start; }
+    .step-badge { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--accent); display: flex; align-items: center; justify-content: center; }
+    .step-body { font-size: 14px; font-weight: 400; color: var(--text2); line-height: 1.55; padding-top: 3px; }
     .step-body strong { color: var(--text); font-weight: 600; }
-    .step-body a      { color: var(--accent); text-decoration: none; font-weight: 500; }
-    .guide-note {
-      margin-top: 14px;
-      padding: 10px 12px;
-      background: rgba(217,119,6,0.07);
-      border-left: 3px solid var(--warn);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      font-size: 13px;
-      color: var(--warn);
-      line-height: 1.6;
-    }
+    .step-body a { color: var(--accent); text-decoration: none; font-weight: 500; }
 
-    /* ── BLE ERROR ── */
-    .ble-error {
-      display: none;
-      padding: 14px 16px;
-      background: rgba(220,38,38,0.07);
-      border: 1px solid rgba(220,38,38,0.25);
-      border-radius: var(--radius);
-      font-size: 14px;
-      color: var(--danger);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    .ble-error strong {
-      display: block;
-      font-weight: 700;
-      font-size: 13px;
-      margin-bottom: 2px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
+    /* ── ERRORS ── */
+    .ble-error { display: none; padding: 14px 16px; background: rgba(220,38,38,0.07); border: 1px solid rgba(220,38,38,0.25); border-radius: var(--radius); font-size: 14px; color: var(--danger); line-height: 1.6; margin-bottom: 12px; }
+    .ble-error strong { display: block; font-weight: 700; font-size: 13px; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
 
-    /* ── ADD BUTTON ── */
-    .add-btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--accent);
-      border: none;
-      border-radius: var(--radius);
-      color: #fff;
-      font-family: var(--sans);
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 2px 8px rgba(37,99,235,0.35);
-      margin-bottom: 4px;
-    }
-    .add-btn:hover  { background: var(--accent-s); box-shadow: 0 4px 16px rgba(37,99,235,0.4); }
+    /* ── BUTTONS ── */
+    .add-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: var(--radius); color: #fff; font-family: var(--sans); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(37,99,235,0.35); margin-bottom: 4px; }
+    .add-btn:hover { background: var(--accent-s); box-shadow: 0 4px 16px rgba(37,99,235,0.4); }
     .add-btn:active { transform: scale(0.98); }
     .add-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
     .add-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+    .add-hint { text-align: center; font-size: 12px; color: var(--text3); font-family: var(--mono); margin-bottom: 20px; letter-spacing: 0.02em; }
 
-    .add-hint {
-      text-align: center;
-      font-size: 12px;
-      color: var(--text3);
-      font-family: var(--mono);
-      margin-bottom: 20px;
-      letter-spacing: 0.02em;
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty {
-      text-align: center;
-      padding: 48px 0 32px;
-    }
-    .empty-icon {
-      width: 56px; height: 56px;
-      margin: 0 auto 18px;
-      color: var(--text3);
-    }
-    .empty h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    .empty p {
-      font-size: 14px;
-      color: var(--text2);
-      line-height: 1.6;
-      max-width: 240px;
-      margin: 0 auto;
-    }
-
-    /* ── SECTION LABEL ── */
-    .section-label {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text3);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    /* ── SENSOR CARD ── */
+    /* ── LIST ── */
+    .empty { text-align: center; padding: 48px 0 32px; }
+    .empty-icon { width: 56px; height: 56px; margin: 0 auto 18px; color: var(--text3); }
+    .empty h2 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty p { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 240px; margin: 0 auto; }
+    .section-label { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
     .sensor-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 
-    .sensor-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-      animation: slideUp 0.35s ease both;
-      position: relative;
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    /* ── CARD ── */
+    .sensor-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; position: relative; animation: slideUp 0.3s ease both; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .sensor-card::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--border2); transition: background 0.4s; }
+    .sensor-card.ok::before { background: var(--ok); }
+    .sensor-card.warn::before { background: var(--warn); }
+    .sensor-card.crit::before { background: var(--danger); }
+    .sensor-card.no-bat::before { background: var(--no-bat); }
+    .sensor-card.loading::before { background: linear-gradient(180deg, transparent, var(--accent), transparent); animation: stripe-flow 1.2s linear infinite; }
+    @keyframes stripe-flow { from { top: 12px; bottom: calc(100% - 24px); opacity: 1; } 50% { top: 0; bottom: 0; opacity: 0.5; } to { top: calc(100% - 24px); bottom: 12px; opacity: 1; } }
 
-    .sensor-card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 12px; bottom: 12px;
-      width: 3px;
-      border-radius: 0 3px 3px 0;
-      background: var(--border2);
-      transition: background 0.4s;
-    }
-    .sensor-card.ok::before      { background: var(--ok); }
-    .sensor-card.warn::before    { background: var(--warn); }
-    .sensor-card.crit::before    { background: var(--danger); }
-    .sensor-card.no-bat::before  { background: var(--no-bat); }
-    .sensor-card.loading::before {
-      background: linear-gradient(180deg, transparent, var(--accent), transparent);
-      animation: stripe-flow 1.2s linear infinite;
-    }
-
-    @keyframes stripe-flow {
-      from { top: 12px; bottom: calc(100% - 24px); opacity: 1; }
-      50%  { top: 0;    bottom: 0; opacity: 0.5; }
-      to   { top: calc(100% - 24px); bottom: 12px; opacity: 1; }
-    }
-
-    .card-main {
-      padding: 16px 16px 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    /* BATTERY VISUAL */
-    .batt-block {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      width: 48px;
-    }
-    .batt-shell {
-      width: 36px; height: 18px;
-      border: 2px solid var(--border2);
-      border-radius: 4px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 2px;
-      transition: border-color 0.4s;
-    }
-    .batt-shell::after {
-      content: '';
-      position: absolute;
-      right: -5px; top: 50%;
-      transform: translateY(-50%);
-      width: 3px; height: 8px;
-      background: var(--border2);
-      border-radius: 0 2px 2px 0;
-      transition: background 0.4s;
-    }
-
-    .sensor-card.ok   .batt-shell            { border-color: var(--ok); }
-    .sensor-card.ok   .batt-shell::after     { background: var(--ok); }
-    .sensor-card.warn .batt-shell            { border-color: var(--warn); }
-    .sensor-card.warn .batt-shell::after     { background: var(--warn); }
-    .sensor-card.crit .batt-shell            { border-color: var(--danger); }
-    .sensor-card.crit .batt-shell::after     { background: var(--danger); }
-    .sensor-card.no-bat .batt-shell          { border-color: var(--no-bat); border-style: dashed; }
-    .sensor-card.no-bat .batt-shell::after   { background: var(--no-bat); }
-
-    .batt-fill {
-      height: 100%;
-      border-radius: 2px;
-      background: var(--border2);
-      transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.4s;
-    }
-    .sensor-card.ok   .batt-fill { background: var(--ok); }
+    .card-main { padding: 16px 16px 16px 20px; display: flex; align-items: center; gap: 14px; }
+    .batt-block { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 48px; }
+    .batt-shell { width: 36px; height: 18px; border: 2px solid var(--border2); border-radius: 4px; position: relative; display: flex; align-items: center; padding: 2px; transition: border-color 0.4s; }
+    .batt-shell::after { content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 3px; height: 8px; background: var(--border2); border-radius: 0 2px 2px 0; transition: background 0.4s; }
+    .sensor-card.ok .batt-shell { border-color: var(--ok); } .sensor-card.ok .batt-shell::after { background: var(--ok); }
+    .sensor-card.warn .batt-shell { border-color: var(--warn); } .sensor-card.warn .batt-shell::after { background: var(--warn); }
+    .sensor-card.crit .batt-shell { border-color: var(--danger); } .sensor-card.crit .batt-shell::after { background: var(--danger); }
+    .sensor-card.no-bat .batt-shell { border-color: var(--no-bat); border-style: dashed; } .sensor-card.no-bat .batt-shell::after { background: var(--no-bat); }
+    
+    .batt-fill { height: 100%; border-radius: 2px; background: var(--border2); transition: width 0.8s ease, background 0.4s; }
+    .sensor-card.ok .batt-fill { background: var(--ok); }
     .sensor-card.warn .batt-fill { background: var(--warn); }
     .sensor-card.crit .batt-fill { background: var(--danger); }
-    .sensor-card.no-bat  .batt-fill { display: none; }
-    .sensor-card.loading .batt-fill {
-      width: 45% !important;
-      background: var(--accent);
-      animation: batt-pulse 1s ease-in-out infinite;
-    }
+    .sensor-card.no-bat .batt-fill { display: none; }
+    .sensor-card.loading .batt-fill { width: 45% !important; background: var(--accent); animation: batt-pulse 1s ease infinite; }
     @keyframes batt-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-    .batt-x {
-      display: none;
-      position: absolute;
-      inset: 0;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      color: var(--no-bat);
-    }
+    .batt-x { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; font-size: 11px; color: var(--no-bat); }
     .sensor-card.no-bat .batt-x { display: flex; }
-
-    .batt-label {
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text2);
-      transition: color 0.4s;
-      text-align: center;
-    }
-    .sensor-card.ok      .batt-label { color: var(--ok); }
-    .sensor-card.warn    .batt-label { color: var(--warn); }
-    .sensor-card.crit    .batt-label { color: var(--danger); }
-    .sensor-card.no-bat  .batt-label { color: var(--no-bat); font-size: 10px; }
+    .batt-label { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text2); text-align: center; }
+    .sensor-card.ok .batt-label { color: var(--ok); }
+    .sensor-card.warn .batt-label { color: var(--warn); }
+    .sensor-card.crit .batt-label { color: var(--danger); }
+    .sensor-card.no-bat .batt-label { color: var(--no-bat); font-size: 10px; }
     .sensor-card.loading .batt-label { color: var(--text3); }
 
-    /* CARD INFO */
     .card-info { flex: 1; min-width: 0; }
-    .card-type {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 3px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .card-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 6px;
-    }
-    .card-meta {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .meta-chip {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text3);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 2px 8px;
-    }
+    .card-type { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px; display: flex; align-items: center; gap: 5px; }
+    .card-name { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+    .card-meta { display: flex; gap: 10px; flex-wrap: wrap; }
+    .meta-chip { font-family: var(--mono); font-size: 11px; color: var(--text3); background: var(--surface2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; }
 
-    /* NO-BAT NOTICE */
-    .no-bat-notice {
-      display: none;
-      margin: 0 16px 0 20px;
-      padding: 10px 12px;
-      background: rgba(124,58,237,0.06);
-      border: 1px solid rgba(124,58,237,0.2);
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      color: var(--no-bat);
-      line-height: 1.55;
-      margin-bottom: 12px;
-    }
+    .no-bat-notice { display: none; margin: 0 16px 0 20px; padding: 10px 12px; background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2); border-radius: var(--radius-sm); font-size: 13px; color: var(--no-bat); line-height: 1.55; margin-bottom: 12px; }
     .sensor-card.no-bat .no-bat-notice { display: block; }
 
-    /* CARD ACTIONS */
-    .card-actions {
-      display: flex;
-      border-top: 1px solid var(--border);
-    }
-    .card-actions button {
-      flex: 1;
-      padding: 11px 8px;
-      background: none;
-      border: none;
-      font-family: var(--sans);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text2);
-      cursor: pointer;
-      border-right: 1px solid var(--border);
-      transition: background 0.15s, color 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
+    .card-actions { display: flex; border-top: 1px solid var(--border); }
+    .card-actions button { flex: 1; padding: 11px 8px; background: none; border: none; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; border-right: 1px solid var(--border); transition: background 0.15s, color 0.15s; }
     .card-actions button:last-child { border-right: none; }
     .card-actions button:hover { background: var(--surface2); }
-    .card-actions .btn-refresh:hover    { color: var(--accent); }
-    .card-actions .btn-remove:hover     { color: var(--danger); }
-    .card-actions .btn-disconnect:hover { color: var(--warn); }
-    .card-actions button:disabled       { opacity: 0.35; cursor: not-allowed; }
+    .card-actions .btn-refresh:hover { color: var(--accent); }
+    .card-actions .btn-remove:hover { color: var(--danger); }
+    .card-actions button:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    /* ── FOOTER ── */
-    footer {
-      padding: 32px 0 24px;
-      text-align: center;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text3);
-      letter-spacing: 0.04em;
-    }
-
-    /* ── ANIMATIONS ── */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    footer { padding: 32px 0 24px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--text3); letter-spacing: 0.04em; }
     .app { animation: fadeIn 0.4s ease both; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -576,13 +154,13 @@
       <h1 class="header-title">Bike<span>Sensors</span></h1>
     </div>
     <div class="status-pill" id="statusPill">
-      <span class="status-dot" id="statusDot"></span>
+      <span class="status-dot"></span>
       <span id="statusText">En espera</span>
     </div>
   </header>
 
   <div class="guide-card" id="guideCard">
-    <button class="guide-toggle" onclick="toggleGuide()" aria-expanded="false">
+    <button class="guide-toggle" onclick="document.getElementById('guideCard').classList.toggle('open')">
       <div class="guide-toggle-left">
         <span class="platform-chip" id="platformChip">···</span>
         <span class="guide-toggle-title" id="guideTitle">Cargando…</span>
@@ -609,9 +187,7 @@
       <h2>Sin sensores</h2>
       <p>Añade tu primer sensor, radar o luz para ver el nivel de batería.</p>
     </div>
-    <div class="section-label" id="sectionLabel" style="display:none">
-      Sensores guardados
-    </div>
+    <div class="section-label" id="sectionLabel" style="display:none">Sensores guardados</div>
     <div class="sensor-list" id="sensorList"></div>
   </div>
 
@@ -619,149 +195,63 @@
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     Buscar dispositivos
   </button>
-  <p class="add-hint">Selecciona tu dispositivo de la lista desplegable</p>
+  <p class="add-hint">Asegúrate de "despertar" el sensor antes de buscar</p>
 
-  <footer>BikeSensors v1.4 · Web Bluetooth API</footer>
-
+  <footer>BikeSensors v2.0 · Motor Seguro WebBLE</footer>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  CONSTANTS & MAPPINGS
-// ═══════════════════════════════════════════════
-const BATTERY_SERVICE  = 0x180F;
-const BATTERY_CHAR     = 0x2A19;
-
-// Todos los UUIDs a los que solicitaremos permiso tras conectar sin filtros
-const OPTIONAL_SERVICES = [
-  BATTERY_SERVICE,
-  0x180A, // Device Information
-  0x1816, // CSC
-  0x1818, // Power
-  0x180D, // HR
-  0x1814, // RSC
-  0x1819, // Nav
-  0x1826, // Fitness Machine
-  '6a4e2800-667b-11e3-949a-0800200c9a66' // Garmin Varia UUID
+// ==========================================
+// 1. BLUETOOTH CONFIG (BLUEFY SAFE)
+// ==========================================
+// Bluefy solo acepta filtros puros basados en UUID (ni acceptAllDevices, ni namePrefix).
+const SAFE_FILTERS = [
+  { services: [0x180D] }, // Heart Rate (Coospo, Magene, Garmin...)
+  { services: [0x1818] }, // Power (Favero, Magene, Stages...)
+  { services: [0x1816] }, // Cadence & Speed (Cycplus, Magene...)
+  { services: [0x1826] }, // Smart Trainer
+  { services: [0x180F] }, // Battery Service directo (Atrapa muchas luces)
+  { services: ['6a4e2800-667b-11e3-949a-0800200c9a66'] } // Radar Varia
 ];
+const OPTIONAL_SERVICES = [0x180F, 0x180A, 0x1818, 0x1816, 0x180D, 0x1826];
 
-function detectTypeFromName(name) {
+// ==========================================
+// 2. PARSERS & UTILS
+// ==========================================
+function detectType(name) {
   const low = (name || '').toLowerCase();
   const map = [
-    [['power','potencia','stages','quarq','assioma','favero','p2m','magene p','pes p'],  { label: 'Potencia', icon: '⚡' }],
-    [['cad','cadence','cadencia','speed','velocidad','spd','sc ','bsc','cycplus c','cycplus s','coospo bk','magene s'],{ label: 'Velocidad / Cadencia', icon: '↻' }],
-    [['hr','heart','pulse','polar','tickr','h10','h7','dual','rhythm','coospo h','magene h'], { label: 'Frecuencia cardíaca', icon: '♥' }],
-    [['radar','varia','rtl515','rtl510','magene l508','l508','rvr315'], { label: 'Radar trasero', icon: '◉' }],
-    [['light','luz','luces','lezyne','bontrager','flare','ion','ut800','cycplus l'], { label: 'Luces', icon: '☀' }],
-    [['di2','etap','eagle','shifting','derailleur'], { label: 'Cambio', icon: '⚙' }],
-    [['trainer','tacx','kickr','neo ','flux','suito','hammer','t200','t300'], { label: 'Rodillo / Trainer', icon: '◈' }],
-    [['edge','elemnt','gps','hammerhead','wahoo','cycplus m','magene c','bc200','bc107'], { label: 'Ciclocomputador', icon: '□' }],
+    [['power','potencia','assioma','favero','p2m','pes p'], { label: 'Potencia', icon: '⚡' }],
+    [['cad','speed','spd','cycplus c','cycplus s','bk','magene s'], { label: 'Velocidad / Cadencia', icon: '↻' }],
+    [['hr','heart','polar','tickr','h10','dual','coospo h','magene h'], { label: 'Frecuencia cardíaca', icon: '♥' }],
+    [['radar','varia','l508','rvr315'], { label: 'Radar trasero', icon: '◉' }],
+    [['light','luz','flare','ion','ut800','cycplus l'], { label: 'Luces', icon: '☀' }],
+    [['trainer','kickr','neo','suito','t200','t300'], { label: 'Rodillo', icon: '◈' }]
   ];
   for (const [keys, type] of map) {
     if (keys.some(k => low.includes(k))) return type;
   }
-  return { label: 'Dispositivo BLE', icon: '◇' };
-}
-
-function detectTypeFromServices(services) {
-  if (!services || !services.length) return null;
-  const uuids = services.map(s => {
-    if (typeof s === 'number') return s;
-    const n = parseInt(s, 16);
-    return isNaN(n) ? s : n;
-  });
-  if (uuids.includes(0x1818)) return { label: 'Potencia', icon: '⚡' };
-  if (uuids.includes(0x1816)) return { label: 'Velocidad / Cadencia', icon: '↻' };
-  if (uuids.includes(0x180D)) return { label: 'Frecuencia cardíaca', icon: '♥' };
-  if (uuids.includes(0x1826)) return { label: 'Rodillo / Trainer', icon: '◈' };
-  if (uuids.includes(0x1814)) return { label: 'Sensor de carrera', icon: '⚡' };
-  if (uuids.includes(0x1819)) return { label: 'GPS / Navegación', icon: '◉' };
-  return null;
-}
-
-// ═══════════════════════════════════════════════
-//  PLATFORM GUIDE
-// ═══════════════════════════════════════════════
-function detectPlatform() {
-  const ua = navigator.userAgent;
-  if (/Bluefy/i.test(ua))                         return 'ios-bluefy';
-  if (/iPhone|iPad|iPod/i.test(ua) && /Safari/i.test(ua) && !/Chrome/i.test(ua)) return 'ios-safari';
-  if (/iPhone|iPad|iPod/i.test(ua))               return 'ios-other';
-  if (/Android/i.test(ua) && /Chrome/i.test(ua))  return 'android-chrome';
-  if (/Android/i.test(ua))                        return 'android-other';
-  if (navigator.bluetooth)                        return 'desktop-ble';
-  return 'desktop-no-ble';
-}
-
-const GUIDES = {
-  'ios-bluefy': {
-    cls: 'ios', label: 'iOS · Bluefy', autoOpen: false, title: '¡Listo! Estás en Bluefy',
-    steps: [['✓', 'Estás en <strong>Bluefy</strong>. No necesitas hacer nada más.'], ['1', 'Activa el <strong>Bluetooth</strong> en Ajustes.'], ['2', 'Pulsa <strong>Buscar dispositivos</strong>.']],
-  },
-  'ios-safari': {
-    cls: 'ios', label: 'iOS · Safari', autoOpen: true, title: 'Safari no soporta Bluetooth',
-    steps: [['!', 'Safari bloquea el acceso BLE.'], ['1', 'Instala <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank">Bluefy</a>.'], ['2', 'Abre esta URL dentro de Bluefy.']],
-  },
-  'ios-other': {
-    cls: 'ios', label: 'iOS', autoOpen: true, title: 'Instala Bluefy para continuar',
-    steps: [['1', 'Instala <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank">Bluefy</a>.'], ['2', 'Abre esta URL dentro de Bluefy.']],
-  },
-  'android-chrome': {
-    cls: 'android', label: 'Android · Chrome', autoOpen: false, title: '¡Listo! Estás en Chrome',
-    steps: [['✓', '<strong>Chrome</strong> soporta Web Bluetooth nativamente.'], ['1', 'Activa <strong>Bluetooth</strong> y <strong>Ubicación</strong>.'], ['2', 'Pulsa <strong>Buscar dispositivos</strong>.']],
-  },
-  'android-other': {
-    cls: 'android', label: 'Android', autoOpen: true, title: 'Abre esto en Chrome',
-    steps: [['1', 'Abre esta URL en <strong>Google Chrome</strong>.']],
-  },
-  'desktop-ble': {
-    cls: 'desktop', label: 'Escritorio', autoOpen: false, title: 'Bluetooth disponible',
-    steps: [['✓', 'Tu navegador es compatible. Pulsa <strong>Buscar dispositivos</strong>.']],
-  },
-  'desktop-no-ble': {
-    cls: 'unknown', label: 'Navegador', autoOpen: true, title: 'Navegador sin soporte BLE',
-    steps: [['→', 'En <strong>PC/Mac</strong>: usa Chrome o Edge.'], ['→', 'En <strong>iPhone</strong>: usa Bluefy.'], ['→', 'En <strong>Android</strong>: usa Chrome.']],
-  },
-};
-
-function buildGuide() {
-  const g = GUIDES[detectPlatform()] || GUIDES['desktop-no-ble'];
-  document.getElementById('platformChip').className = 'platform-chip ' + g.cls;
-  document.getElementById('platformChip').textContent = g.label;
-  document.getElementById('guideTitle').textContent = g.title;
-  document.getElementById('guideBody').innerHTML = `<div class="guide-steps">${g.steps.map(([n, t]) => `<div class="guide-step"><div class="step-badge">${n}</div><div class="step-body">${t}</div></div>`).join('')}</div>`;
-  if (g.autoOpen) document.getElementById('guideCard').classList.add('open');
-}
-function toggleGuide() { document.getElementById('guideCard').classList.toggle('open'); }
-
-// ═══════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════
-let sensors = JSON.parse(localStorage.getItem('bsc_v2') || '[]');
-const save  = () => localStorage.setItem('bsc_v2', JSON.stringify(sensors));
-const $     = id => document.getElementById(id);
-
-// Para mantener vivas las conexiones activas y poder desconectarlas
-const activeDevices = {};
-
-// ═══════════════════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════════════════
-function cardClass(s) {
-  if (s.loading)  return 'loading';
-  if (s.noBattery) return 'no-bat';
-  if (s.battery == null) return '';
-  if (s.battery > 40) return 'ok';
-  if (s.battery > 15) return 'warn';
-  return 'crit';
+  return { label: 'Dispositivo', icon: '◇' };
 }
 
 function timeAgo(iso) {
   if (!iso) return 'nunca';
   const d = Math.floor((Date.now() - new Date(iso)) / 1000);
-  if (d < 60)   return 'ahora';
+  if (d < 60) return 'ahora';
   if (d < 3600) return `${Math.floor(d/60)} min`;
   return `${Math.floor(d/3600)} h`;
+}
+
+// ==========================================
+// 3. STATE & UI
+// ==========================================
+let sensors = JSON.parse(localStorage.getItem('bsc_v3') || '[]');
+const save = () => localStorage.setItem('bsc_v3', JSON.stringify(sensors));
+const $ = id => document.getElementById(id);
+
+function setStatus(text, active) {
+  $('statusText').textContent = text;
+  $('statusPill').className = 'status-pill' + (active ? ' active' : '');
 }
 
 function render() {
@@ -777,31 +267,16 @@ function render() {
   list.innerHTML = '';
 
   sensors.forEach(s => {
-    const isConnected = activeDevices[s.id] && activeDevices[s.id].gatt.connected;
-    const cls = cardClass(s);
-    const pct = s.noBattery ? null : s.battery;
-    const w   = pct != null ? Math.max(5, pct) : 0;
-    const pctLabel = s.loading ? '···' : s.noBattery ? 'N/D' : pct != null ? pct + '%' : '---';
+    let cls = s.loading ? 'loading' : s.noBattery ? 'no-bat' : s.battery > 40 ? 'ok' : s.battery > 15 ? 'warn' : 'crit';
+    let pctLabel = s.loading ? '···' : s.noBattery ? 'N/D' : (s.battery != null ? s.battery + '%' : '---');
+    let w = s.battery != null && !s.noBattery ? Math.max(5, s.battery) : 0;
 
-    let actionsHTML = '';
-    if (isConnected) {
-      actionsHTML += `<button class="btn-disconnect" onclick="disconnectSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>⏏ Desconectar</button>`;
-      actionsHTML += `<button class="btn-refresh" onclick="refreshSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>↻ Batería</button>`;
-    } else {
-      actionsHTML += `<button class="btn-refresh" onclick="refreshSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>↺ Conectar</button>`;
-    }
-    actionsHTML += `<button class="btn-remove" onclick="removeSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>✕ Eliminar</button>`;
-
-    const card = document.createElement('div');
-    card.className = 'sensor-card ' + cls;
-    card.id = 'card-' + s.id;
-    card.innerHTML = `
+    const div = document.createElement('div');
+    div.className = 'sensor-card ' + cls;
+    div.innerHTML = `
       <div class="card-main">
         <div class="batt-block">
-          <div class="batt-shell">
-            <div class="batt-fill" style="width:${w}%"></div>
-            <div class="batt-x">✕</div>
-          </div>
+          <div class="batt-shell"><div class="batt-fill" style="width:${w}%"></div><div class="batt-x">✕</div></div>
           <div class="batt-label">${pctLabel}</div>
         </div>
         <div class="card-info">
@@ -813,83 +288,65 @@ function render() {
           </div>
         </div>
       </div>
-      ${s.noBattery ? `<div class="no-bat-notice">Este sensor no reporta la batería mediante el protocolo estándar BLE.</div>` : ''}
-      <div class="card-actions">${actionsHTML}</div>
+      ${s.noBattery ? `<div class="no-bat-notice">Este dispositivo no envía datos de batería.</div>` : ''}
+      <div class="card-actions">
+        <button class="btn-refresh" onclick="refreshSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>↺ Leer Batería</button>
+        <button class="btn-remove" onclick="removeSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>✕ Eliminar</button>
+      </div>
     `;
-    list.appendChild(card);
+    list.appendChild(div);
   });
 }
 
-function setStatus(text, active) {
-  $('statusText').textContent = text;
-  $('statusPill').className = 'status-pill' + (active ? ' active' : '');
-}
-
-// ═══════════════════════════════════════════════
-//  BLUETOOTH
-// ═══════════════════════════════════════════════
-function onDeviceDisconnected(event) {
-  const device = event.target;
-  delete activeDevices[device.id];
-  render();
-}
-
-async function readBattery(device) {
-  if (!activeDevices[device.id]) {
-    activeDevices[device.id] = device;
-    device.addEventListener('gattserverdisconnected', onDeviceDisconnected);
-  }
-  
-  const server = await device.gatt.connect();
+// ==========================================
+// 4. CORE BLE LOGIC
+// ==========================================
+async function connectAndRead(device) {
+  let server;
   try {
-    const svc  = await server.getPrimaryService(BATTERY_SERVICE);
-    const chr  = await svc.getCharacteristic(BATTERY_CHAR);
-    const val  = await chr.readValue();
+    server = await device.gatt.connect();
+    const svc = await server.getPrimaryService(0x180F); // Battery Service
+    const chr = await svc.getCharacteristic(0x2A19); // Battery Level
+    const val = await chr.readValue();
     return { battery: val.getUint8(0), noBattery: false };
-  } catch {
+  } catch (e) {
     return { battery: null, noBattery: true };
+  } finally {
+    if (server) try { server.disconnect(); } catch (_) {}
   }
 }
 
 async function addSensor() {
-  if (!navigator.bluetooth) { $('bleError').style.display = 'block'; return; }
+  if (!navigator.bluetooth) return;
   $('addBtn').disabled = true;
-  setStatus('Escaneando…', true);
+  setStatus('Buscando…', true);
 
   try {
-    // Solución Bluefy Error 2: Eliminamos los filtros restrictivos y aceptamos todos
     const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
+      filters: SAFE_FILTERS,
       optionalServices: OPTIONAL_SERVICES
     });
 
     if (sensors.find(s => s.id === device.id)) {
-      alert('Este sensor ya está en la lista.');
-      $('addBtn').disabled = false;
-      setStatus('En espera', false);
-      return;
+      alert('El dispositivo ya está en la lista.');
+    } else {
+      setStatus('Conectando…', true);
+      const data = await connectAndRead(device);
+      const t = detectType(device.name);
+      
+      sensors.push({
+        id: device.id,
+        name: device.name || 'Dispositivo Desconocido',
+        type: t.label, icon: t.icon,
+        battery: data.battery, noBattery: data.noBattery,
+        lastSeen: new Date().toISOString()
+      });
+      save();
+      render();
     }
-
-    setStatus('Conectando…', true);
-    const advServices = device.uuids || [];
-    const type = detectTypeFromServices(advServices) || detectTypeFromName(device.name);
-    const { battery, noBattery } = await readBattery(device);
-
-    sensors.push({
-      id: device.id,
-      name: device.name || 'Dispositivo desconocido',
-      type: type.label,
-      icon: type.icon,
-      battery, noBattery,
-      lastSeen: new Date().toISOString(),
-    });
-    save();
-    render();
-
   } catch (err) {
-    if (err.name !== 'NotFoundError' && err.name !== 'AbortError' && err.name !== 'SecurityError') {
-      const realError = err.message || JSON.stringify(err) || String(err);
-      alert('Error BLE: ' + realError);
+    if (err.name !== 'NotFoundError' && err.name !== 'AbortError') {
+      alert('Error: ' + (err.message || String(err)));
     }
   }
 
@@ -898,7 +355,6 @@ async function addSensor() {
 }
 
 async function refreshSensor(id) {
-  if (!navigator.bluetooth) return;
   const sensor = sensors.find(s => s.id === id);
   if (!sensor) return;
 
@@ -907,23 +363,22 @@ async function refreshSensor(id) {
   setStatus('Conectando…', true);
 
   try {
-    let device = activeDevices[id];
-    // Si la referencia se perdió, solicitar permisos de nuevo usando acceptAllDevices
-    if (!device) {
-      device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: OPTIONAL_SERVICES
-      });
-    }
-    const { battery, noBattery } = await readBattery(device);
-    sensor.battery   = battery;
-    sensor.noBattery = noBattery;
-    sensor.lastSeen  = new Date().toISOString();
+    const device = await navigator.bluetooth.requestDevice({
+      filters: SAFE_FILTERS,
+      optionalServices: OPTIONAL_SERVICES
+    });
+    
+    // Validar que el usuario seleccionó el mismo dispositivo
+    if (device.id !== id) throw new Error("Seleccionaste un dispositivo distinto.");
+
+    const data = await connectAndRead(device);
+    sensor.battery = data.battery;
+    sensor.noBattery = data.noBattery;
+    sensor.lastSeen = new Date().toISOString();
     save();
   } catch (err) {
-    if (err.name !== 'NotFoundError' && err.name !== 'AbortError' && err.name !== 'SecurityError') {
-      const realError = err.message || JSON.stringify(err) || String(err);
-      alert('Error al conectar: ' + realError);
+    if (err.name !== 'NotFoundError' && err.name !== 'AbortError') {
+      alert('Error: ' + (err.message || String(err)));
     }
   }
 
@@ -932,31 +387,35 @@ async function refreshSensor(id) {
   setStatus('En espera', false);
 }
 
-function disconnectSensor(id) {
-  const device = activeDevices[id];
-  if (device && device.gatt.connected) {
-    device.gatt.disconnect();
-  }
-  delete activeDevices[id];
-  render();
-}
-
 function removeSensor(id) {
-  disconnectSensor(id);
   sensors = sensors.filter(s => s.id !== id);
   save();
   render();
 }
 
-// ═══════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════
+// ==========================================
+// 5. PLATFORM DETECT (GUIDE)
+// ==========================================
+function buildGuide() {
+  const ua = navigator.userAgent;
+  let g = { cls: 'unknown', label: 'Navegador', title: 'Navegador no compatible', steps: [['!', 'Usa Chrome (Android/PC) o Bluefy (iOS).']] };
+  
+  if (/Bluefy/i.test(ua)) g = { cls: 'ios', label: 'iOS · Bluefy', title: 'Entorno válido', steps: [['✓', 'Todo listo.']] };
+  else if (/iPhone|iPad/i.test(ua)) g = { cls: 'ios', label: 'iOS', title: 'Requiere Bluefy', steps: [['1', 'Safari bloquea BLE. Instala Bluefy en la App Store.']] };
+  else if (/Chrome/i.test(ua) && /Android/i.test(ua)) g = { cls: 'android', label: 'Android', title: 'Entorno válido', steps: [['✓', 'Todo listo.']] };
+  else if (navigator.bluetooth) g = { cls: 'desktop', label: 'Escritorio', title: 'Entorno válido', steps: [['✓', 'Todo listo.']] };
+
+  $('platformChip').className = 'platform-chip ' + g.cls;
+  $('platformChip').textContent = g.label;
+  $('guideTitle').textContent = g.title;
+  $('guideBody').innerHTML = `<div class="guide-steps">${g.steps.map(s => `<div class="guide-step"><div class="step-badge">${s[0]}</div><div class="step-body">${s[1]}</div></div>`).join('')}</div>`;
+  if (g.cls === 'unknown' || g.title.includes('Requiere')) $('guideCard').classList.add('open');
+}
+
+// Init
 document.addEventListener('DOMContentLoaded', () => {
   buildGuide();
-  if (!navigator.bluetooth) {
-    $('bleError').style.display = 'block';
-    $('addBtn').disabled = true;
-  }
+  if (!navigator.bluetooth) { $('bleError').style.display = 'block'; $('addBtn').disabled = true; }
   render();
 });
 </script>
