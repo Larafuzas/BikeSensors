@@ -1,716 +1,876 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>BikeSensors — Battery Check</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+
+    /* ── TOKENS ── */
     :root {
-      --bg:        #0a0c0f;
-      --surface:   #111418;
-      --surface2:  #161b22;
-      --border:    #1e2530;
-      --accent:    #00e5ff;
-      --warn:      #ffb300;
-      --danger:    #ff3d3d;
-      --ok:        #00e676;
-      --no-bat:    #7c6aff;
-      --text:      #e8edf2;
-      --muted:     #4a5568;
-      --mono:      'Share Tech Mono', monospace;
-      --sans:      'Barlow Condensed', sans-serif;
+      --accent:   #2563eb;
+      --accent-s: #1d4ed8;
+      --ok:       #16a34a;
+      --warn:     #d97706;
+      --danger:   #dc2626;
+      --no-bat:   #7c3aed;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --radius: 14px;
+      --radius-sm: 8px;
     }
 
-```
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* LIGHT */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg:       #f1f5f9;
+        --surface:  #ffffff;
+        --surface2: #f8fafc;
+        --border:   #e2e8f0;
+        --border2:  #cbd5e1;
+        --text:     #0f172a;
+        --text2:    #475569;
+        --text3:    #94a3b8;
+        --shadow:   0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+        --shadow-sm:0 1px 2px rgba(0,0,0,0.06);
+      }
+    }
 
-html, body {
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
+    /* DARK */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:       #0d1117;
+        --surface:  #161b22;
+        --surface2: #1c2128;
+        --border:   #30363d;
+        --border2:  #484f58;
+        --text:     #e6edf3;
+        --text2:    #8b949e;
+        --text3:    #484f58;
+        --shadow:   0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+        --shadow-sm:0 1px 2px rgba(0,0,0,0.3);
+      }
+    }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
-  );
-  pointer-events: none;
-  z-index: 999;
-}
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* HEADER */
-header {
-  padding: 28px 24px 0;
-  animation: fadeDown 0.5s ease both;
-}
-.header-inner {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
-}
-.logo { display: flex; flex-direction: column; gap: 2px; }
-.logo-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-}
-.logo-title {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  line-height: 1;
-  text-transform: uppercase;
-}
-.logo-title span { color: var(--accent); }
+    html { font-size: 16px; }
 
-.status-badge {
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 2px;
-  border: 1px solid var(--muted);
-  color: var(--muted);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  transition: all 0.3s;
-}
-.status-badge.scanning {
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 12px rgba(0,229,255,0.2);
-  animation: pulse-badge 1.2s ease-in-out infinite;
-}
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
-}
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+    }
 
-/* MAIN */
-main {
-  padding: 20px 24px 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 520px;
-  margin: 0 auto;
-}
+    /* ── LAYOUT ── */
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px env(safe-area-inset-bottom, 16px);
+    }
 
-/* GUIDE PANEL */
-.guide-panel {
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  animation: fadeDown 0.5s 0.1s ease both;
-}
-.guide-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--surface2);
-  cursor: pointer;
-  user-select: none;
-  gap: 10px;
-}
-.guide-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.guide-platform-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: 2px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.guide-platform-badge.ios     { background: rgba(0,229,255,0.12); color: var(--accent); border: 1px solid rgba(0,229,255,0.3); }
-.guide-platform-badge.android { background: rgba(0,230,118,0.12); color: var(--ok);     border: 1px solid rgba(0,230,118,0.3); }
-.guide-platform-badge.desktop { background: rgba(255,179,0,0.12); color: var(--warn);   border: 1px solid rgba(255,179,0,0.3); }
-.guide-platform-badge.unknown { background: rgba(124,106,255,0.12); color: var(--no-bat); border: 1px solid rgba(124,106,255,0.3); }
+    /* ── HEADER ── */
+    .header {
+      padding: 52px 0 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
 
-.guide-title {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: var(--text);
-}
-.guide-chevron {
-  font-size: 12px;
-  color: var(--muted);
-  transition: transform 0.25s;
-  flex-shrink: 0;
-}
-.guide-panel.open .guide-chevron { transform: rotate(180deg); }
+    .header-left {}
 
-.guide-body {
-  display: none;
-  padding: 16px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-}
-.guide-panel.open .guide-body { display: block; }
+    .header-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
 
-.guide-steps { display: flex; flex-direction: column; gap: 10px; }
-.guide-step  { display: flex; gap: 12px; align-items: flex-start; }
-.step-num {
-  flex-shrink: 0;
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.step-text {
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.5;
-  padding-top: 2px;
-}
-.step-text strong { font-weight: 700; color: var(--accent); }
-.step-text a      { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(0,229,255,0.3); }
+    .header-title {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: var(--text);
+    }
 
-.guide-note {
-  margin-top: 14px;
-  padding: 10px 12px;
-  background: rgba(255,179,0,0.06);
-  border-left: 2px solid var(--warn);
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--warn);
-  line-height: 1.7;
-  border-radius: 0 2px 2px 0;
-}
+    .header-title span { color: var(--accent); }
 
-/* ADD BUTTON */
-.add-btn {
-  width: 100%;
-  padding: 18px;
-  background: transparent;
-  border: 1px dashed var(--border);
-  border-radius: 4px;
-  color: var(--muted);
-  font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.25s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  animation: fadeDown 0.5s 0.2s ease both;
-}
-.add-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(0,229,255,0.04);
-  box-shadow: 0 0 20px rgba(0,229,255,0.08);
-}
-.add-btn:active { transform: scale(0.98); }
-.add-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
-.add-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .status-pill {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px 4px 8px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text2);
+      letter-spacing: 0.04em;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
 
-/* SENSOR CARD */
-.sensor-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  animation: slideIn 0.4s ease both;
-}
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text3);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
 
-.card-accent-bar {
-  height: 2px;
-  width: 100%;
-  background: var(--border);
-  transition: background 0.5s;
-}
-.sensor-card.ok         .card-accent-bar { background: var(--ok); }
-.sensor-card.warn       .card-accent-bar { background: var(--warn); }
-.sensor-card.crit       .card-accent-bar { background: var(--danger); }
-.sensor-card.no-battery .card-accent-bar { background: var(--no-bat); }
-.sensor-card.connecting .card-accent-bar {
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s linear infinite;
-}
-@keyframes shimmer {
-  from { background-position: -200% 0; }
-  to   { background-position:  200% 0; }
-}
+    .status-pill.active { color: var(--accent); border-color: var(--accent); }
+    .status-pill.active .status-dot {
+      background: var(--accent);
+      animation: pulse-dot 1.2s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(37,99,235,0.4);
+    }
 
-.card-body {
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+    @keyframes pulse-dot {
+      0%   { box-shadow: 0 0 0 0   rgba(37,99,235,0.5); }
+      70%  { box-shadow: 0 0 0 6px rgba(37,99,235,0); }
+      100% { box-shadow: 0 0 0 0   rgba(37,99,235,0); }
+    }
 
-/* BATTERY GAUGE */
-.battery-wrap {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 52px;
-}
-.battery-gauge {
-  width: 44px; height: 22px;
-  border: 2px solid var(--muted);
-  border-radius: 3px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 2px;
-  transition: border-color 0.4s;
-}
-.battery-gauge::after {
-  content: '';
-  position: absolute;
-  right: -6px; top: 50%;
-  transform: translateY(-50%);
-  width: 4px; height: 8px;
-  background: var(--muted);
-  border-radius: 0 2px 2px 0;
-  transition: background 0.4s;
-}
-.sensor-card.ok         .battery-gauge { border-color: var(--ok); }
-.sensor-card.ok         .battery-gauge::after { background: var(--ok); }
-.sensor-card.warn       .battery-gauge { border-color: var(--warn); }
-.sensor-card.warn       .battery-gauge::after { background: var(--warn); }
-.sensor-card.crit       .battery-gauge { border-color: var(--danger); }
-.sensor-card.crit       .battery-gauge::after { background: var(--danger); }
-.sensor-card.no-battery .battery-gauge { border-color: var(--no-bat); border-style: dashed; }
-.sensor-card.no-battery .battery-gauge::after { background: var(--no-bat); }
+    /* ── GUIDE CARD ── */
+    .guide-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
 
-.battery-fill {
-  height: 100%;
-  border-radius: 1px;
-  transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.4s;
-  background: var(--muted);
-}
-.sensor-card.ok         .battery-fill { background: var(--ok); }
-.sensor-card.warn       .battery-fill { background: var(--warn); }
-.sensor-card.crit       .battery-fill { background: var(--danger); }
-.sensor-card.no-battery .battery-fill { display: none; }
-.sensor-card.connecting .battery-fill {
-  width: 40% !important;
-  background: var(--accent);
-  animation: pulse-fill 1s ease-in-out infinite;
-}
-@keyframes pulse-fill {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 1; }
-}
+    .guide-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      gap: 12px;
+      text-align: left;
+    }
 
-/* X icon inside gauge when no battery */
-.battery-no-icon {
-  display: none;
-  position: absolute;
-  inset: 0;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: var(--no-bat);
-  font-family: var(--mono);
-}
-.sensor-card.no-battery .battery-no-icon { display: flex; }
+    .guide-toggle-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
 
-.battery-pct {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 1px;
-  transition: color 0.4s;
-  text-align: center;
-  white-space: nowrap;
-}
-.sensor-card.ok         .battery-pct { color: var(--ok); }
-.sensor-card.warn       .battery-pct { color: var(--warn); }
-.sensor-card.crit       .battery-pct { color: var(--danger); }
-.sensor-card.no-battery .battery-pct { color: var(--no-bat); font-size: 9px; letter-spacing: 0; }
+    .platform-chip {
+      flex-shrink: 0;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
 
-/* NO-BATTERY INLINE NOTICE */
-.no-battery-notice {
-  display: none;
-  margin: 0 18px 14px;
-  padding: 9px 13px;
-  background: rgba(124,106,255,0.07);
-  border: 1px solid rgba(124,106,255,0.22);
-  border-radius: 3px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: #a99aff;
-  line-height: 1.65;
-}
-.sensor-card.no-battery .no-battery-notice { display: block; }
+    .platform-chip.ios     { background: rgba(37,99,235,0.1);  color: var(--accent); }
+    .platform-chip.android { background: rgba(22,163,74,0.1);  color: var(--ok); }
+    .platform-chip.desktop { background: rgba(217,119,6,0.1);  color: var(--warn); }
+    .platform-chip.unknown { background: rgba(124,58,237,0.1); color: var(--no-bat); }
 
-/* CARD INFO */
-.card-info { flex: 1; min-width: 0; }
-.sensor-type {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.sensor-name {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-}
-.sensor-meta {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 6px;
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-}
+    .guide-toggle-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-/* CARD ACTIONS */
-.card-actions { display: flex; border-top: 1px solid var(--border); }
-.card-actions button {
-  flex: 1;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
-  border-right: 1px solid var(--border);
-}
-.card-actions button:last-child  { border-right: none; }
-.card-actions button:hover       { background: rgba(255,255,255,0.04); color: var(--text); }
-.card-actions .refresh-btn:hover { color: var(--accent); }
-.card-actions .remove-btn:hover  { color: var(--danger); }
-.card-actions button:disabled    { opacity: 0.3; cursor: not-allowed; }
+    .guide-chevron {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--text2);
+      transition: transform 0.25s;
+    }
 
-/* EMPTY STATE */
-.empty-state {
-  text-align: center;
-  padding: 44px 24px;
-  animation: fadeDown 0.5s 0.3s ease both;
-}
-.empty-icon { width: 60px; height: 60px; margin: 0 auto 20px; opacity: 0.12; }
-.empty-state h2 {
-  font-size: 15px; font-weight: 600;
-  letter-spacing: 3px; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 10px;
-}
-.empty-state p {
-  font-family: var(--mono); font-size: 12px;
-  color: var(--muted); line-height: 1.8;
-  max-width: 260px; margin: 0 auto;
-}
+    .guide-card.open .guide-chevron { transform: rotate(180deg); }
 
-/* BLE WARNING */
-.ble-warning {
-  padding: 14px 18px;
-  background: rgba(255,61,61,0.08);
-  border: 1px solid rgba(255,61,61,0.3);
-  border-radius: 4px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #ff6b6b;
-  line-height: 1.7;
-  animation: fadeDown 0.5s ease both;
-}
-.ble-warning strong {
-  display: block; margin-bottom: 4px;
-  letter-spacing: 2px; text-transform: uppercase;
-}
+    .guide-body {
+      display: none;
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--border);
+    }
 
-footer {
-  padding: 24px;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 2px;
-  opacity: 0.4;
-}
+    .guide-card.open .guide-body { display: block; }
 
-@keyframes fadeDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    .guide-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 16px;
+    }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-```
+    .guide-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
 
+    .step-badge {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-body {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text2);
+      line-height: 1.55;
+      padding-top: 3px;
+    }
+
+    .step-body strong { color: var(--text); font-weight: 600; }
+    .step-body a      { color: var(--accent); text-decoration: none; font-weight: 500; }
+
+    .guide-note {
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: rgba(217,119,6,0.07);
+      border-left: 3px solid var(--warn);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 13px;
+      color: var(--warn);
+      line-height: 1.6;
+    }
+
+    /* ── BLE ERROR ── */
+    .ble-error {
+      display: none;
+      padding: 14px 16px;
+      background: rgba(220,38,38,0.07);
+      border: 1px solid rgba(220,38,38,0.25);
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: var(--danger);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .ble-error strong {
+      display: block;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── ADD BUTTON ── */
+    .add-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.35);
+      margin-bottom: 4px;
+    }
+
+    .add-btn:hover  { background: var(--accent-s); box-shadow: 0 4px 16px rgba(37,99,235,0.4); }
+    .add-btn:active { transform: scale(0.98); }
+    .add-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .add-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+    .add-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text3);
+      font-family: var(--mono);
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 48px 0 32px;
+    }
+
+    .empty-icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 18px;
+      color: var(--text3);
+    }
+
+    .empty h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .empty p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* ── SENSOR CARD ── */
+    .sensor-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+
+    .sensor-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      animation: slideUp 0.35s ease both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* status stripe on left edge */
+    .sensor-card { position: relative; }
+    .sensor-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 12px; bottom: 12px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--border2);
+      transition: background 0.4s;
+    }
+
+    .sensor-card.ok::before      { background: var(--ok); }
+    .sensor-card.warn::before    { background: var(--warn); }
+    .sensor-card.crit::before    { background: var(--danger); }
+    .sensor-card.no-bat::before  { background: var(--no-bat); }
+    .sensor-card.loading::before {
+      background: linear-gradient(180deg, transparent, var(--accent), transparent);
+      animation: stripe-flow 1.2s linear infinite;
+    }
+
+    @keyframes stripe-flow {
+      from { top: 12px; bottom: calc(100% - 24px); opacity: 1; }
+      50%  { top: 0;    bottom: 0; opacity: 0.5; }
+      to   { top: calc(100% - 24px); bottom: 12px; opacity: 1; }
+    }
+
+    .card-main {
+      padding: 16px 16px 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* BATTERY VISUAL */
+    .batt-block {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      width: 48px;
+    }
+
+    .batt-shell {
+      width: 36px; height: 18px;
+      border: 2px solid var(--border2);
+      border-radius: 4px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      transition: border-color 0.4s;
+    }
+
+    .batt-shell::after {
+      content: '';
+      position: absolute;
+      right: -5px; top: 50%;
+      transform: translateY(-50%);
+      width: 3px; height: 8px;
+      background: var(--border2);
+      border-radius: 0 2px 2px 0;
+      transition: background 0.4s;
+    }
+
+    .sensor-card.ok   .batt-shell            { border-color: var(--ok); }
+    .sensor-card.ok   .batt-shell::after     { background: var(--ok); }
+    .sensor-card.warn .batt-shell            { border-color: var(--warn); }
+    .sensor-card.warn .batt-shell::after     { background: var(--warn); }
+    .sensor-card.crit .batt-shell            { border-color: var(--danger); }
+    .sensor-card.crit .batt-shell::after     { background: var(--danger); }
+    .sensor-card.no-bat .batt-shell          { border-color: var(--no-bat); border-style: dashed; }
+    .sensor-card.no-bat .batt-shell::after   { background: var(--no-bat); }
+
+    .batt-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--border2);
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.4s;
+    }
+
+    .sensor-card.ok   .batt-fill { background: var(--ok); }
+    .sensor-card.warn .batt-fill { background: var(--warn); }
+    .sensor-card.crit .batt-fill { background: var(--danger); }
+    .sensor-card.no-bat  .batt-fill { display: none; }
+    .sensor-card.loading .batt-fill {
+      width: 45% !important;
+      background: var(--accent);
+      animation: batt-pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes batt-pulse {
+      0%, 100% { opacity: 0.4; }
+      50%       { opacity: 1; }
+    }
+
+    .batt-x {
+      display: none;
+      position: absolute;
+      inset: 0;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--no-bat);
+    }
+
+    .sensor-card.no-bat .batt-x { display: flex; }
+
+    .batt-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      transition: color 0.4s;
+      text-align: center;
+    }
+
+    .sensor-card.ok      .batt-label { color: var(--ok); }
+    .sensor-card.warn    .batt-label { color: var(--warn); }
+    .sensor-card.crit    .batt-label { color: var(--danger); }
+    .sensor-card.no-bat  .batt-label { color: var(--no-bat); font-size: 10px; }
+    .sensor-card.loading .batt-label { color: var(--text3); }
+
+    /* CARD INFO */
+    .card-info { flex: 1; min-width: 0; }
+
+    .card-type {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 6px;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta-chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
+
+    /* NO-BAT NOTICE */
+    .no-bat-notice {
+      display: none;
+      margin: 0 16px 0 20px;
+      padding: 10px 12px;
+      background: rgba(124,58,237,0.06);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--no-bat);
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+
+    .sensor-card.no-bat .no-bat-notice { display: block; }
+
+    /* CARD ACTIONS */
+    .card-actions {
+      display: flex;
+      border-top: 1px solid var(--border);
+    }
+
+    .card-actions button {
+      flex: 1;
+      padding: 11px 8px;
+      background: none;
+      border: none;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      transition: background 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .card-actions button:last-child { border-right: none; }
+    .card-actions button:hover { background: var(--surface2); }
+    .card-actions .btn-refresh:hover { color: var(--accent); }
+    .card-actions .btn-remove:hover  { color: var(--danger); }
+    .card-actions button:disabled    { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 32px 0 24px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .app { animation: fadeIn 0.4s ease both; }
   </style>
 </head>
 <body>
+<div class="app">
 
-<header>
-  <div class="header-inner">
-    <div class="logo">
-      <span class="logo-label">Sistema de monitoreo</span>
-      <h1 class="logo-title">Bike<span>Sensors</span></h1>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-eyebrow">Monitor de baterías</div>
+      <h1 class="header-title">Bike<span>Sensors</span></h1>
     </div>
-    <div class="status-badge" id="statusBadge">EN ESPERA</div>
-  </div>
-</header>
+    <div class="status-pill" id="statusPill">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">En espera</span>
+    </div>
+  </header>
 
-<main>
-
-  <!-- Device guide panel -->
-
-  <div class="guide-panel" id="guidePanel">
-    <div class="guide-header" onclick="toggleGuide()">
-      <div class="guide-header-left">
-        <span class="guide-platform-badge" id="platformBadge">···</span>
-        <span class="guide-title" id="guideTitle">Cargando guía…</span>
+  <!-- GUIDE CARD -->
+  <div class="guide-card" id="guideCard">
+    <button class="guide-toggle" onclick="toggleGuide()" aria-expanded="false">
+      <div class="guide-toggle-left">
+        <span class="platform-chip" id="platformChip">···</span>
+        <span class="guide-toggle-title" id="guideTitle">Cargando…</span>
       </div>
       <span class="guide-chevron">▾</span>
-    </div>
+    </button>
     <div class="guide-body" id="guideBody"></div>
   </div>
 
-  <!-- BLE not supported warning -->
-
-  <div class="ble-warning" id="bleWarning" style="display:none">
+  <!-- BLE ERROR -->
+  <div class="ble-error" id="bleError">
     <strong>⚠ Bluetooth no disponible</strong>
-    Este navegador no soporta Web Bluetooth API.<br>
-    Consulta la guía de arriba para saber cómo abrirlo correctamente.
+    Este navegador no soporta Web Bluetooth. Consulta la guía de arriba.
   </div>
 
-  <!-- Empty state -->
-
-  <div class="empty-state" id="emptyState">
-    <svg class="empty-icon" viewBox="0 0 64 64" fill="none" stroke="white" stroke-width="1.5">
-      <rect x="8" y="20" width="40" height="24" rx="3"/>
-      <rect x="48" y="27" width="6" height="10" rx="2"/>
-      <line x1="16" y1="20" x2="16" y2="44"/>
-      <line x1="24" y1="20" x2="24" y2="44"/>
-      <line x1="32" y1="20" x2="32" y2="44"/>
-    </svg>
-    <h2>Sin sensores</h2>
-    <p>Pulsa el botón de abajo para escanear y añadir tu primer sensor via Bluetooth.</p>
+  <!-- SENSOR SECTION -->
+  <div id="sensorSection">
+    <div class="empty" id="emptyState">
+      <svg class="empty-icon" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="6" y="18" width="36" height="20" rx="3"/>
+        <rect x="42" y="24" width="5" height="8" rx="1.5"/>
+        <line x1="13" y1="18" x2="13" y2="38"/>
+        <line x1="20" y1="18" x2="20" y2="38"/>
+        <line x1="27" y1="18" x2="27" y2="38"/>
+      </svg>
+      <h2>Sin sensores</h2>
+      <p>Añade tu primer sensor de ciclismo para ver el nivel de batería.</p>
+    </div>
+    <div class="section-label" id="sectionLabel" style="display:none">
+      Sensores guardados
+    </div>
+    <div class="sensor-list" id="sensorList"></div>
   </div>
 
-  <!-- Sensor list -->
-
-  <div id="sensorList" style="display:flex; flex-direction:column; gap:12px;"></div>
-
-  <!-- Add sensor button -->
-
+  <!-- ADD BUTTON -->
   <button class="add-btn" id="addBtn" onclick="addSensor()">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Añadir sensor
+    Buscar sensores de ciclismo
   </button>
+  <p class="add-hint">Solo se mostrarán sensores BLE de ciclismo</p>
 
-</main>
+  <footer>BikeSensors v1.2 · Web Bluetooth API</footer>
 
-<footer>BIKESENSORS v1.1 · WEB BLUETOOTH API · HTTPS REQUIRED</footer>
+</div><!-- /app -->
 
 <script>
-// ─── DEVICE DETECTION ───────────────────────
-function detectPlatform() {
-  const ua        = navigator.userAgent;
-  const isIOS     = /iPhone|iPad|iPod/i.test(ua);
-  const isAndroid = /Android/i.test(ua);
-  const isBluefy  = /Bluefy/i.test(ua);
-  const isChrome  = /Chrome/i.test(ua) && !/Chromium|EdgA/i.test(ua);
-  const isSafari  = /Safari/i.test(ua) && !/Chrome/i.test(ua);
+// ═══════════════════════════════════════════════
+//  CYCLING BLE SERVICE UUIDs
+//  Only devices advertising these services will
+//  appear in the picker. Eliminates TVs, watches,
+//  headphones, etc.
+// ═══════════════════════════════════════════════
+const CYCLING_SERVICES = [
+  0x1816,   // Cycling Speed and Cadence
+  0x1818,   // Cycling Power
+  0x180D,   // Heart Rate
+  0x1814,   // Running Speed and Cadence (some bike sensors use this)
+  0x1819,   // Location and Navigation (GPS computers)
+  0x180F,   // Battery Service (used as optional read target)
+  0x1826,   // Fitness Machine (smart trainers)
+  0xFEC6,   // Tacx (proprietary)
+  0x6e400001b5a3f393e0aef4b49f2ed, // UART (Wahoo, some Garmin)
+];
 
-  if (isIOS && isBluefy)       return 'ios-bluefy';
-  if (isIOS && isSafari)       return 'ios-safari';
-  if (isIOS)                   return 'ios-other';
-  if (isAndroid && isChrome)   return 'android-chrome';
-  if (isAndroid)               return 'android-other';
-  if (navigator.bluetooth)     return 'desktop-ble';
+// We request devices that advertise at least one cycling service
+const FILTER_SERVICES = [
+  { services: [0x1816] },   // CSC
+  { services: [0x1818] },   // Power
+  { services: [0x180D] },   // HR
+  { services: [0x1814] },   // RSC
+  { services: [0x1819] },   // Nav
+  { services: [0x1826] },   // Fitness Machine
+];
+
+const BATTERY_SERVICE  = 0x180F;
+const BATTERY_CHAR     = 0x2A19;
+
+// ═══════════════════════════════════════════════
+//  SENSOR TYPE from advertised services
+// ═══════════════════════════════════════════════
+function detectTypeFromServices(services) {
+  if (!services || !services.length) return null;
+  const uuids = services.map(s => {
+    if (typeof s === 'number') return s;
+    const n = parseInt(s, 16);
+    return isNaN(n) ? s : n;
+  });
+
+  if (uuids.includes(0x1818)) return { label: 'Potencia',            icon: '⚡' };
+  if (uuids.includes(0x1816)) return { label: 'Velocidad / Cadencia',icon: '↻' };
+  if (uuids.includes(0x180D)) return { label: 'Frecuencia cardíaca', icon: '♥' };
+  if (uuids.includes(0x1826)) return { label: 'Rodillo / Trainer',   icon: '◈' };
+  if (uuids.includes(0x1814)) return { label: 'Sensor de carrera',   icon: '⚡' };
+  if (uuids.includes(0x1819)) return { label: 'GPS / Navegación',    icon: '◉' };
+  return null;
+}
+
+function detectTypeFromName(name) {
+  const low = (name || '').toLowerCase();
+  const map = [
+    [['power','potencia','stages','quarq','assioma','favero','p2m'],  { label: 'Potencia',            icon: '⚡' }],
+    [['cad','cadence','cadencia','speed','velocidad','spd','sc ','bsc'],{ label: 'Velocidad / Cadencia',icon: '↻' }],
+    [['hr','heart','pulse','polar','tickr','h10','h7','dual','rhythm'], { label: 'Frecuencia cardíaca', icon: '♥' }],
+    [['radar','varia'],                                                 { label: 'Radar trasero',       icon: '◉' }],
+    [['light','luz','luces','lezyne','varia light'],                    { label: 'Luces',               icon: '☀' }],
+    [['di2','etap','eagle','shifting','derailleur'],                    { label: 'Cambio',              icon: '⚙' }],
+    [['trainer','tacx','kickr','neo ','flux','suito','hammer'],         { label: 'Rodillo / Trainer',   icon: '◈' }],
+    [['edge','elemnt','gps','hammerhead','wahoo'],                      { label: 'Ciclocomputador',     icon: '□' }],
+  ];
+  for (const [keys, type] of map) {
+    if (keys.some(k => low.includes(k))) return type;
+  }
+  return { label: 'Sensor de ciclismo', icon: '◇' };
+}
+
+// ═══════════════════════════════════════════════
+//  PLATFORM GUIDE
+// ═══════════════════════════════════════════════
+function detectPlatform() {
+  const ua = navigator.userAgent;
+  if (/Bluefy/i.test(ua))                         return 'ios-bluefy';
+  if (/iPhone|iPad|iPod/i.test(ua) && /Safari/i.test(ua) && !/Chrome/i.test(ua)) return 'ios-safari';
+  if (/iPhone|iPad|iPod/i.test(ua))               return 'ios-other';
+  if (/Android/i.test(ua) && /Chrome/i.test(ua))  return 'android-chrome';
+  if (/Android/i.test(ua))                         return 'android-other';
+  if (navigator.bluetooth)                          return 'desktop-ble';
   return 'desktop-no-ble';
 }
 
 const GUIDES = {
   'ios-bluefy': {
-    cls: 'ios', label: 'iOS · Bluefy',
-    title: '¡Todo listo! Estás en Bluefy',
+    cls: 'ios', label: 'iOS · Bluefy', autoOpen: false,
+    title: '¡Listo! Estás en Bluefy',
     steps: [
-      ['✓', 'Estás usando <strong>Bluefy</strong>, el único navegador iOS con soporte Web Bluetooth. No necesitas nada más.'],
-      ['1', 'Comprueba que el <strong>Bluetooth del iPhone</strong> está activado en Ajustes del sistema.'],
-      ['2', 'Enciende el sensor que quieres comprobar y pulsa <strong>Añadir sensor</strong>.'],
-      ['3', 'Selecciona tu sensor en el diálogo de emparejamiento. La batería se leerá automáticamente.'],
-    ],
-    note: null,
-    autoOpen: false,
+      ['✓', 'Estás en <strong>Bluefy</strong>, el único navegador iOS con soporte Web Bluetooth. No necesitas hacer nada más.'],
+      ['1', 'Activa el <strong>Bluetooth</strong> en los Ajustes del iPhone.'],
+      ['2', 'Enciende el sensor y pulsa <strong>Buscar sensores</strong>.'],
+    ], note: null,
   },
   'ios-safari': {
-    cls: 'ios', label: 'iOS · Safari',
+    cls: 'ios', label: 'iOS · Safari', autoOpen: true,
     title: 'Safari no soporta Bluetooth',
     steps: [
-      ['!', 'Safari bloquea el acceso BLE en iOS. Necesitas instalar <strong>Bluefy</strong>, un navegador gratuito especializado.'],
-      ['1', 'Instala <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank">Bluefy desde la App Store</a> (gratuito).'],
-      ['2', 'Abre <strong>Bluefy</strong> y navega a la URL de esta aplicación.'],
-      ['3', 'Pulsa <strong>Añadir sensor</strong> desde Bluefy y todo funcionará.'],
-    ],
-    note: 'Chrome para iOS tampoco funciona — Apple obliga a todos los navegadores a usar el motor WebKit de Safari, que bloquea Bluetooth.',
-    autoOpen: true,
+      ['!', 'Safari bloquea el acceso BLE. Necesitas instalar <strong>Bluefy</strong>.'],
+      ['1', 'Instala <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank">Bluefy en la App Store</a> (gratuito).'],
+      ['2', 'Abre esta misma URL dentro de Bluefy.'],
+    ], note: 'Chrome para iOS tampoco funciona: Apple obliga a todos los navegadores a usar el motor de Safari.',
   },
   'ios-other': {
-    cls: 'ios', label: 'iOS',
+    cls: 'ios', label: 'iOS', autoOpen: true,
     title: 'Instala Bluefy para continuar',
     steps: [
-      ['1', 'Este navegador no soporta Web Bluetooth en iOS.'],
-      ['2', 'Instala <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank">Bluefy desde la App Store</a> (gratuito) y abre esta misma URL desde ahí.'],
-    ],
-    note: null,
-    autoOpen: true,
+      ['1', 'Instala <a href="https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055" target="_blank">Bluefy desde la App Store</a> (gratuito).'],
+      ['2', 'Abre esta misma URL dentro de Bluefy.'],
+    ], note: null,
   },
   'android-chrome': {
-    cls: 'android', label: 'Android · Chrome',
-    title: '¡Todo listo! Estás en Chrome',
+    cls: 'android', label: 'Android · Chrome', autoOpen: false,
+    title: '¡Listo! Estás en Chrome',
     steps: [
-      ['✓', '<strong>Chrome en Android</strong> soporta Web Bluetooth de forma nativa. No necesitas ninguna app adicional.'],
-      ['1', 'Activa el <strong>Bluetooth</strong> en los ajustes rápidos de tu Android.'],
-      ['2', 'Activa también la <strong>Ubicación</strong> — Android la requiere para escanear BLE aunque no se use.'],
-      ['3', 'Enciende el sensor y pulsa <strong>Añadir sensor</strong>. Acepta el permiso de Bluetooth cuando Chrome lo solicite.'],
-    ],
-    note: null,
-    autoOpen: false,
+      ['✓', '<strong>Chrome en Android</strong> soporta Web Bluetooth de forma nativa.'],
+      ['1', 'Activa <strong>Bluetooth</strong> y <strong>Ubicación</strong> en los ajustes rápidos.'],
+      ['2', 'Pulsa <strong>Buscar sensores</strong> y acepta el permiso de Bluetooth.'],
+    ], note: null,
   },
   'android-other': {
-    cls: 'android', label: 'Android',
-    title: 'Usa Chrome para continuar',
+    cls: 'android', label: 'Android', autoOpen: true,
+    title: 'Abre esto en Chrome',
     steps: [
-      ['1', 'Este navegador no soporta Web Bluetooth. Abre esta misma URL en <strong>Google Chrome</strong>.'],
-      ['2', 'Chrome para Android tiene soporte BLE nativo — no necesitas instalar nada extra.'],
-    ],
-    note: null,
-    autoOpen: true,
+      ['1', 'Este navegador no soporta Web Bluetooth. Abre esta URL en <strong>Google Chrome</strong>.'],
+    ], note: null,
   },
   'desktop-ble': {
-    cls: 'desktop', label: 'Escritorio',
+    cls: 'desktop', label: 'Escritorio', autoOpen: false,
     title: 'Bluetooth disponible',
     steps: [
-      ['✓', 'Tu navegador soporta Web Bluetooth. Asegúrate de que el <strong>Bluetooth del ordenador</strong> está activado.'],
-      ['1', 'Enciende el sensor y pulsa <strong>Añadir sensor</strong>.'],
-      ['2', 'Selecciónalo en el diálogo del navegador. La lectura es inmediata.'],
-    ],
-    note: 'Compatible con Chrome y Edge en macOS y Windows. No funciona en Firefox ni Safari de escritorio.',
-    autoOpen: false,
+      ['✓', 'Tu navegador soporta Web Bluetooth. Activa el Bluetooth del ordenador y pulsa <strong>Buscar sensores</strong>.'],
+    ], note: 'Compatible con Chrome y Edge en macOS y Windows.',
   },
   'desktop-no-ble': {
-    cls: 'unknown', label: 'Navegador',
-    title: 'Navegador sin soporte Bluetooth',
+    cls: 'unknown', label: 'Navegador', autoOpen: true,
+    title: 'Navegador sin soporte BLE',
     steps: [
-      ['!', 'Este navegador no implementa Web Bluetooth API.'],
-      ['→', 'En <strong>ordenador</strong>: usa Google Chrome o Microsoft Edge.'],
+      ['→', 'En <strong>ordenador</strong>: usa Chrome o Edge.'],
       ['→', 'En <strong>iPhone</strong>: usa Bluefy.'],
       ['→', 'En <strong>Android</strong>: usa Chrome.'],
-    ],
-    note: 'Firefox y Safari de escritorio no soportan Web Bluetooth.',
-    autoOpen: true,
+    ], note: 'Firefox y Safari de escritorio no soportan Web Bluetooth.',
   },
 };
 
 function buildGuide() {
-  const key   = detectPlatform();
-  const g     = GUIDES[key] || GUIDES['desktop-no-ble'];
-  const panel = document.getElementById('guidePanel');
+  const key = detectPlatform();
+  const g   = GUIDES[key] || GUIDES['desktop-no-ble'];
+  const card = document.getElementById('guideCard');
 
-  document.getElementById('platformBadge').className = 'guide-platform-badge ' + g.cls;
-  document.getElementById('platformBadge').textContent = g.label;
-  document.getElementById('guideTitle').textContent    = g.title;
+  document.getElementById('platformChip').className   = 'platform-chip ' + g.cls;
+  document.getElementById('platformChip').textContent = g.label;
+  document.getElementById('guideTitle').textContent   = g.title;
 
   const stepsHTML = g.steps.map(([n, t]) =>
     `<div class="guide-step">
-       <div class="step-num">${n}</div>
-       <div class="step-text">${t}</div>
+       <div class="step-badge">${n}</div>
+       <div class="step-body">${t}</div>
      </div>`
   ).join('');
 
-  const noteHTML = g.note
-    ? `<div class="guide-note">⚠ ${g.note}</div>`
-    : '';
-
+  const noteHTML = g.note ? `<div class="guide-note">⚠ ${g.note}</div>` : '';
   document.getElementById('guideBody').innerHTML =
     `<div class="guide-steps">${stepsHTML}</div>${noteHTML}`;
 
-  if (g.autoOpen) panel.classList.add('open');
+  if (g.autoOpen) card.classList.add('open');
 }
 
 function toggleGuide() {
-  document.getElementById('guidePanel').classList.toggle('open');
+  const card = document.getElementById('guideCard');
+  card.classList.toggle('open');
 }
 
-// ─── SENSOR TYPES ───────────────────────────
-const SENSOR_TYPES = [
-  { keys: ['hr','heart','pulse','polar','tickr','h10','h7','dual'], label: 'FRECUENCIA CARDÍACA', icon: '♥' },
-  { keys: ['speed','velocidad','spd','bsc','sc'],                   label: 'VELOCIDAD',           icon: '⚡' },
-  { keys: ['cadence','cadencia','cad'],                             label: 'CADENCIA',            icon: '↻' },
-  { keys: ['power','potencia','stages','quarq','assioma','favero'], label: 'POTENCIA',            icon: '◈' },
-  { keys: ['radar','varia','rearview'],                             label: 'RADAR',               icon: '◉' },
-  { keys: ['light','luz','luces','lezyne'],                         label: 'LUCES',               icon: '☀' },
-  { keys: ['di2','etap','eagle','shifting'],                        label: 'CAMBIO',              icon: '⚙' },
-  { keys: ['edge','elemnt','gps','computer'],                       label: 'CICLOCOMPUTADOR',     icon: '□' },
-];
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let sensors = JSON.parse(localStorage.getItem('bsc_v2') || '[]');
+const save  = () => localStorage.setItem('bsc_v2', JSON.stringify(sensors));
+const $     = id => document.getElementById(id);
 
-function detectType(name) {
-  const low = (name || '').toLowerCase();
-  for (const t of SENSOR_TYPES) {
-    if (t.keys.some(k => low.includes(k))) return t;
-  }
-  return { label: 'SENSOR BLE', icon: '◇' };
-}
-
-// ─── STATE ──────────────────────────────────
-const BATTERY_SERVICE = 'battery_service';
-const BATTERY_CHAR    = 'battery_level';
-let sensors = JSON.parse(localStorage.getItem('bsc_sensors') || '[]');
-const save = () => localStorage.setItem('bsc_sensors', JSON.stringify(sensors));
-const $    = id => document.getElementById(id);
-
-// ─── RENDER ─────────────────────────────────
-function statusClass(s) {
-  if (s.noBattery) return 'no-battery';
-  const p = s.battery;
-  if (p === null || p === undefined) return '';
-  if (p > 40) return 'ok';
-  if (p > 15) return 'warn';
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+function cardClass(s) {
+  if (s.loading)  return 'loading';
+  if (s.noBattery) return 'no-bat';
+  if (s.battery == null) return '';
+  if (s.battery > 40) return 'ok';
+  if (s.battery > 15) return 'warn';
   return 'crit';
 }
 
@@ -718,83 +878,89 @@ function timeAgo(iso) {
   if (!iso) return 'nunca';
   const d = Math.floor((Date.now() - new Date(iso)) / 1000);
   if (d < 60)   return 'ahora';
-  if (d < 3600) return Math.floor(d / 60) + ' min';
-  return Math.floor(d / 3600) + ' h';
+  if (d < 3600) return `${Math.floor(d/60)} min`;
+  return `${Math.floor(d/3600)} h`;
 }
 
 function render() {
   const list  = $('sensorList');
   const empty = $('emptyState');
+  const label = $('sectionLabel');
   list.innerHTML = '';
 
-  if (!sensors.length) { empty.style.display = 'block'; return; }
+  if (!sensors.length) {
+    empty.style.display = 'block';
+    label.style.display = 'none';
+    return;
+  }
   empty.style.display = 'none';
+  label.style.display = 'block';
 
   sensors.forEach(s => {
-    const sc  = statusClass(s);
+    const cls = cardClass(s);
     const pct = s.noBattery ? null : s.battery;
-    const w   = pct != null ? Math.max(4, pct) : 0;
-    const pctLabel = s.noBattery ? 'N/D' : (pct != null ? pct + '%' : '---');
+    const w   = pct != null ? Math.max(5, pct) : 0;
+    const pctLabel = s.loading ? '···'
+      : s.noBattery ? 'N/D'
+      : pct != null  ? pct + '%'
+      : '---';
 
-    const noNotice = s.noBattery ? `
-      <div class="no-battery-notice">
-        ◇ Este sensor no expone el nivel de batería mediante el protocolo estándar BLE
-        (Battery Service 0x180F). Consulta la app oficial del fabricante para conocer su estado.
+    const noNoticeHTML = s.noBattery ? `
+      <div class="no-bat-notice">
+        Este sensor no reporta la batería mediante el protocolo estándar BLE.
+        Consulta la app del fabricante para ver su estado.
       </div>` : '';
 
     const card = document.createElement('div');
-    card.className = 'sensor-card ' + sc;
+    card.className = 'sensor-card ' + cls;
     card.id = 'card-' + s.id;
     card.innerHTML = `
-      <div class="card-accent-bar"></div>
-      <div class="card-body">
-        <div class="battery-wrap">
-          <div class="battery-gauge">
-            <div class="battery-fill" style="width:${w}%"></div>
-            <div class="battery-no-icon">✕</div>
+      <div class="card-main">
+        <div class="batt-block">
+          <div class="batt-shell">
+            <div class="batt-fill" style="width:${w}%"></div>
+            <div class="batt-x">✕</div>
           </div>
-          <div class="battery-pct">${pctLabel}</div>
+          <div class="batt-label">${pctLabel}</div>
         </div>
         <div class="card-info">
-          <div class="sensor-type">${s.icon} ${s.type}</div>
-          <div class="sensor-name">${s.name}</div>
-          <div class="sensor-meta">
-            <span>⟳ ${timeAgo(s.lastSeen)}</span>
-            <span>ID ${s.id.slice(-6).toUpperCase()}</span>
+          <div class="card-type">${s.icon} ${s.type}</div>
+          <div class="card-name">${s.name}</div>
+          <div class="card-meta">
+            <span class="meta-chip">⟳ ${timeAgo(s.lastSeen)}</span>
+            <span class="meta-chip">${s.id.slice(-5).toUpperCase()}</span>
           </div>
         </div>
       </div>
-      ${noNotice}
+      ${noNoticeHTML}
       <div class="card-actions">
-        <button class="refresh-btn" onclick="refreshSensor('${s.id}')">↺ Actualizar</button>
-        <button class="remove-btn"  onclick="removeSensor('${s.id}')">✕ Eliminar</button>
-      </div>`;
+        <button class="btn-refresh" onclick="refreshSensor('${s.id}')" ${s.loading ? 'disabled' : ''}>
+          ↺ Actualizar
+        </button>
+        <button class="btn-remove"  onclick="removeSensor('${s.id}')"  ${s.loading ? 'disabled' : ''}>
+          ✕ Eliminar
+        </button>
+      </div>
+    `;
     list.appendChild(card);
   });
 }
 
-function setCardConnecting(id) {
-  const card = $('card-' + id);
-  if (!card) return;
-  card.className = 'sensor-card connecting';
-  const pct = card.querySelector('.battery-pct');
-  if (pct) pct.textContent = '···';
-  card.querySelectorAll('button').forEach(b => b.disabled = true);
+function setStatus(text, active) {
+  const pill = $('statusPill');
+  $('statusText').textContent = text;
+  pill.className = 'status-pill' + (active ? ' active' : '');
 }
 
-function setStatusBadge(text, active) {
-  const b = $('statusBadge');
-  b.textContent = text;
-  b.className = 'status-badge' + (active ? ' scanning' : '');
-}
-
-// ─── BLUETOOTH ──────────────────────────────
+// ═══════════════════════════════════════════════
+//  BLUETOOTH
+// ═══════════════════════════════════════════════
 async function readBattery(device) {
   const server = await device.gatt.connect();
   try {
     const svc  = await server.getPrimaryService(BATTERY_SERVICE);
-    const char = await svc.getCharacteristic(BATTERY_CHAR);
-    const val  = await char.readValue();
+    const chr  = await svc.getCharacteristic(BATTERY_CHAR);
+    const val  = await chr.readValue();
     return { battery: val.getUint8(0), noBattery: false };
   } catch {
     return { battery: null, noBattery: true };
@@ -804,33 +970,38 @@ async function readBattery(device) {
 }
 
 async function addSensor() {
-  if (!navigator.bluetooth) { $('bleWarning').style.display = 'block'; return; }
+  if (!navigator.bluetooth) { $('bleError').style.display = 'block'; return; }
 
   const btn = $('addBtn');
   btn.disabled = true;
-  setStatusBadge('ESCANEANDO', true);
+  setStatus('Escaneando…', true);
 
   try {
     const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
+      filters: FILTER_SERVICES,
       optionalServices: [BATTERY_SERVICE],
     });
 
     if (sensors.find(s => s.id === device.id)) {
       alert('Este sensor ya está en la lista.');
       btn.disabled = false;
-      setStatusBadge('EN ESPERA', false);
+      setStatus('En espera', false);
       return;
     }
 
-    setStatusBadge('CONECTANDO', true);
+    setStatus('Conectando…', true);
+
+    // Detect type: prefer advertised services, fall back to name
+    const advServices = device.uuids || [];
+    const type = detectTypeFromServices(advServices) || detectTypeFromName(device.name);
+
     const { battery, noBattery } = await readBattery(device);
-    const type = detectType(device.name);
 
     sensors.push({
       id: device.id,
       name: device.name || 'Sensor sin nombre',
-      type: type.label, icon: type.icon,
+      type: type.label,
+      icon: type.icon,
       battery, noBattery,
       lastSeen: new Date().toISOString(),
     });
@@ -839,11 +1010,11 @@ async function addSensor() {
 
   } catch (err) {
     if (err.name !== 'NotFoundError' && err.name !== 'AbortError')
-      alert('Error al conectar: ' + err.message);
+      alert('Error: ' + err.message);
   }
 
   btn.disabled = false;
-  setStatusBadge('EN ESPERA', false);
+  setStatus('En espera', false);
 }
 
 async function refreshSensor(id) {
@@ -851,12 +1022,14 @@ async function refreshSensor(id) {
   const sensor = sensors.find(s => s.id === id);
   if (!sensor) return;
 
-  setCardConnecting(id);
-  setStatusBadge('CONECTANDO', true);
+  // mark loading
+  sensor.loading = true;
+  render();
+  setStatus('Conectando…', true);
 
   try {
     const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
+      filters: FILTER_SERVICES,
       optionalServices: [BATTERY_SERVICE],
     });
     const { battery, noBattery } = await readBattery(device);
@@ -866,11 +1039,12 @@ async function refreshSensor(id) {
     save();
   } catch (err) {
     if (err.name !== 'NotFoundError' && err.name !== 'AbortError')
-      alert('No se pudo conectar: ' + err.message);
+      alert('Error al conectar: ' + err.message);
   }
 
+  sensor.loading = false;
   render();
-  setStatusBadge('EN ESPERA', false);
+  setStatus('En espera', false);
 }
 
 function removeSensor(id) {
@@ -879,16 +1053,17 @@ function removeSensor(id) {
   render();
 }
 
-// ─── INIT ───────────────────────────────────
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   buildGuide();
   if (!navigator.bluetooth) {
-    $('bleWarning').style.display = 'block';
+    $('bleError').style.display = 'block';
     $('addBtn').disabled = true;
   }
   render();
 });
 </script>
-
 </body>
 </html>
